@@ -3,7 +3,7 @@ const { objectId } = require('./custom.validation');
 
 const createStore = {
   body: Joi.object().keys({
-    name: Joi.string().required().name(),
+    name: Joi.string().required(),
     description: Joi.string().required(),
     location: Joi.string().required(),
     contactNumber: Joi.string().required(),

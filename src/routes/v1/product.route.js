@@ -9,7 +9,7 @@ const router = express.Router();
 router
   .route('/')
   .post(auth('manageProducts'), validate(productValidation.createProduct), productController.createProduct)
-  .get(auth('getProducts'), validate(productValidation.getProducts), productController.getProducts);
+  .get(validate(productValidation.getProducts), productController.getProducts);
 
 router
   .route('/:productId')
@@ -82,7 +82,7 @@ module.exports = router;
  *
  *   get:
  *     summary: Get all products
- *     description: Only admins can retrieve all products.
+ *     description: All users can retrieve all products.
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
