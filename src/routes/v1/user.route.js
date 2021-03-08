@@ -42,12 +42,18 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - name
+ *               - firstName
+ *               - lastName
+ *               - userName
  *               - email
  *               - password
  *               - role
  *             properties:
- *               name:
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *               userName:
  *                 type: string
  *               email:
  *                 type: string
@@ -62,10 +68,12 @@ module.exports = router;
  *                  type: string
  *                  enum: [user, admin]
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: user
+ *               firstName: karl
+ *               lastName: balagtey
+ *               userName: kmarkb8017
+ *               email: karl.balagtey@gmail.com
+ *               password: password
+ *               role: admin
  *     responses:
  *       "201":
  *         description: Created
@@ -88,10 +96,10 @@ module.exports = router;
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
- *         name: name
+ *         name: userName
  *         schema:
  *           type: string
- *         description: User name
+ *         description: User userName
  *       - in: query
  *         name: role
  *         schema:

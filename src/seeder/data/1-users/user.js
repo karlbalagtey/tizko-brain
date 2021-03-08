@@ -1,6 +1,7 @@
 /* eslint-disable no-plusplus */
 const faker = require('faker');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
 const { ObjectId } = require('mongodb');
 
 let users = [];
@@ -10,7 +11,7 @@ for (let i = 0; i < 200; i++) {
   const newFakedUser = {
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
-    userName: faker.internet.userName(),
+    userName: faker.internet.userName() + uuidv4(),
     email: faker.internet.email(),
     password: bcrypt.hashSync('password', 10),
     role: 'user',
@@ -31,7 +32,7 @@ for (let i = 0; i < 100; i++) {
   const newFakedAdmin = {
     firstName: faker.name.firstName(),
     lastName: faker.name.lastName(),
-    userName: faker.internet.userName(),
+    userName: faker.internet.userName() + uuidv4(),
     email: faker.internet.email(),
     password: bcrypt.hashSync('password', 10),
     role: 'admin',
@@ -174,6 +175,6 @@ const admin = [
   },
 ];
 
-users = [...users, admin];
+users = [...users, ...admin];
 
 module.exports = users;

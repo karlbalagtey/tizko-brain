@@ -24,28 +24,33 @@ const loginUserWithEmailAndPassword = async (email, password) => {
  * @param {string} refreshToken
  * @returns {Promise}
  */
-const logout = async (refreshToken) => {
-  const refreshTokenDoc = await Token.findOne({ token: refreshToken, type: tokenTypes.REFRESH, blacklisted: false });
+const logout = async (req, res) => {
+  const { rt } = req.signedCookies;
+  const refreshTokenDoc = await Token.findOne({ token: rt, type: tokenTypes.REFRESH, blacklisted: false });
   if (!refreshTokenDoc) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
   }
   await refreshTokenDoc.remove();
+  await res.clearCookie('rt');
 };
 
 /**
  * Refresh auth tokens
  * @param {string} refreshToken
+ * @param {string} res
  * @returns {Promise<Object>}
  */
-const refreshAuth = async (refreshToken) => {
+const refreshAuth = async (refreshToken, res) => {
   try {
     const refreshTokenDoc = await tokenService.verifyToken(refreshToken, tokenTypes.REFRESH);
     const user = await userService.getUserById(refreshTokenDoc.user);
+
     if (!user) {
-      throw new Error();
+      // throw new Error();
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'No user found with refresh token');
     }
     await refreshTokenDoc.remove();
-    return tokenService.generateAuthTokens(user);
+    return tokenService.generateAuthTokens(user, res);
   } catch (error) {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Please authenticate');
   }

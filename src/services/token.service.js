@@ -60,27 +60,41 @@ const verifyToken = async (token, type) => {
 };
 
 /**
+ * Set refresh token cookie
+ * @param {string} res
+ * @param {ObjectId} token
+ * @param {string} user
+ * @param {string} refreshTokenExpires
+ * @returns {Promise<Object>}
+ */
+const setTokenCookie = (res, token, refreshTokenExpires) => {
+  const cookieOptions = {
+    httpOnly: true,
+    signed: true,
+    expires: refreshTokenExpires,
+  };
+
+  res.cookie('rt', token, cookieOptions);
+};
+
+/**
  * Generate auth tokens
  * @param {User} user
  * @returns {Promise<Object>}
  */
-const generateAuthTokens = async (user) => {
+const generateAuthTokens = async (user, res) => {
   const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
   const accessToken = generateToken(user.id, accessTokenExpires, tokenTypes.ACCESS);
 
-  const refreshTokenExpires = moment().add(config.jwt.refreshExpirationDays, 'days');
+  const refreshTokenExpires = moment().add(config.jwt.refreshExpirationMinutes, 'minutes');
   const refreshToken = generateToken(user.id, refreshTokenExpires, tokenTypes.REFRESH);
+
   await saveToken(refreshToken, user.id, refreshTokenExpires, tokenTypes.REFRESH);
+  await setTokenCookie(res, refreshToken, refreshTokenExpires.toDate());
 
   return {
-    access: {
-      token: accessToken,
-      expires: accessTokenExpires.toDate(),
-    },
-    refresh: {
-      token: refreshToken,
-      expires: refreshTokenExpires.toDate(),
-    },
+    access: accessToken,
+    expires: accessTokenExpires.unix(),
   };
 };
 

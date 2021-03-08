@@ -17,6 +17,7 @@ const envVarsSchema = Joi.object()
     SMTP_USERNAME: Joi.string().description('username for email server'),
     SMTP_PASSWORD: Joi.string().description('password for email server'),
     EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+    COOKIE_SECRET: Joi.string().required().description('Used for signed cookies and cookie-parser'),
   })
   .unknown();
 
@@ -41,6 +42,7 @@ module.exports = {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
     refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
+    refreshExpirationMinutes: envVars.JWT_REFRESH_EXPIRATION_MINUTES,
     resetPasswordExpirationMinutes: 10,
   },
   email: {
@@ -54,4 +56,5 @@ module.exports = {
     },
     from: envVars.EMAIL_FROM,
   },
+  cookieSecret: envVars.COOKIE_SECRET,
 };

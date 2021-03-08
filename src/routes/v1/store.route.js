@@ -43,21 +43,16 @@ module.exports = router;
  *             type: object
  *             required:
  *               - name
- *               - email
+ *               - location
  *               - password
  *               - role
  *             properties:
  *               name:
  *                 type: string
- *               email:
+ *               location:
  *                 type: string
- *                 format: email
- *                 description: must be unique
  *               password:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
  *               role:
  *                  type: string
  *                  enum: [store, admin]
@@ -93,10 +88,10 @@ module.exports = router;
  *           type: string
  *         description: Store name
  *       - in: query
- *         name: role
+ *         name: location
  *         schema:
  *           type: string
- *         description: Store role
+ *         description: Store location
  *       - in: query
  *         name: sortBy
  *         schema:
