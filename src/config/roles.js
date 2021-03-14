@@ -1,9 +1,9 @@
 const roles = ['user', 'admin', 'superadmin'];
 
 const roleRights = new Map();
-roleRights.set(roles[0], ['getProducts', 'buyProducts', 'getStores']);
-roleRights.set(roles[1], ['getProducts', 'manageProducts', 'getCustomers', 'manageCustomers']);
-roleRights.set(roles[2], ['getStores', 'manageStores', 'getUsers', 'manageUsers']);
+roleRights.set(roles[0], []);
+roleRights.set(roles[1], ['getProducts', 'manageProducts', 'getCustomers', 'manageCustomers', 'updateProfile']);
+roleRights.set(roles[2], ['getStores', 'manageStores', 'getUsers', 'manageUsers', 'updateProfile']);
 
 module.exports = {
   roles,

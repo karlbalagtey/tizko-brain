@@ -47,7 +47,7 @@ const getUserById = async (id) => {
  * @returns {Promise<User>}
  */
 const getUserByEmail = async (email) => {
-  return User.findOne({ email });
+  return User.findOne(email);
 };
 
 /**
@@ -56,7 +56,7 @@ const getUserByEmail = async (email) => {
  * @returns {Promise<User>}
  */
 const getUserByUserName = async (userName) => {
-  return User.findOne({ userName });
+  return User.findOne(userName);
 };
 
 /**
@@ -65,15 +65,16 @@ const getUserByUserName = async (userName) => {
  * @param {Object} updateBody
  * @returns {Promise<User>}
  */
-const updateUserById = async (userId, updateBody) => {
+const updateUserById = async (userId, req) => {
   const user = await getUserById(userId);
+
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
-  if (updateBody.email && (await User.isEmailTaken(updateBody.email, userId))) {
+  if (req.body.email && (await User.isEmailTaken(req.body.email, userId))) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Email already taken');
   }
-  Object.assign(user, updateBody);
+  Object.assign(user, req.body);
   await user.save();
   return user;
 };

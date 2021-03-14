@@ -40,12 +40,13 @@ const updateUser = {
   }),
   body: Joi.object()
     .keys({
-      email: Joi.string().email(),
-      password: Joi.string().custom(password),
-      firstName: Joi.string(),
-      lastName: Joi.string(),
-      contactNumber: Joi.string(),
-      acceptTerms: Joi.boolean(),
+      email: Joi.string().email().allow(null),
+      password: Joi.string().custom(password).allow(null),
+      userName: Joi.string().allow(null),
+      firstName: Joi.string().allow(null),
+      lastName: Joi.string().allow(null),
+      contactNumber: Joi.string().allow(null),
+      acceptTerms: Joi.boolean().allow(null),
     })
     .min(1),
 };

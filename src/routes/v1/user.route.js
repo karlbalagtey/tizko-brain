@@ -8,8 +8,8 @@ const router = express.Router();
 
 router
   .route('/')
-  .post(validate(userValidation.createUser), userController.createUser)
-  .get(auth('getUsers'), validate(userValidation.getUsers), userController.getUsers);
+  .post(auth('manageUsers'), validate(userValidation.createUser), userController.createUser)
+  .get(auth('manageUsers'), validate(userValidation.getUsers), userController.getUsers);
 
 router
   .route('/:userId')
@@ -72,7 +72,7 @@ module.exports = router;
  *               lastName: balagtey
  *               userName: kmarkb8017
  *               email: karl.balagtey@gmail.com
- *               password: password
+ *               password: password123
  *               role: admin
  *     responses:
  *       "201":
