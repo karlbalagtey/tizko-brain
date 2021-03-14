@@ -28,7 +28,7 @@ const logout = async (req, res) => {
   const { rt } = req.signedCookies;
   const refreshTokenDoc = await Token.findOne({ token: rt, type: tokenTypes.REFRESH, blacklisted: false });
   if (!refreshTokenDoc) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Token Not Found');
   }
   await refreshTokenDoc.remove();
   await res.clearCookie('rt');
@@ -46,8 +46,7 @@ const refreshAuth = async (refreshToken, res) => {
     const user = await userService.getUserById(refreshTokenDoc.user);
 
     if (!user) {
-      // throw new Error();
-      throw new ApiError(httpStatus.UNAUTHORIZED, 'No user found with refresh token');
+      throw new Error();
     }
     await refreshTokenDoc.remove();
     return tokenService.generateAuthTokens(user, res);

@@ -4,6 +4,9 @@ const httpStatus = require('http-status');
 const httpMocks = require('node-mocks-http');
 const moment = require('moment');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const express = require('express');
+const cookieParser = require('cookie-parser');
 const app = require('../../src/app');
 const config = require('../../src/config/config');
 const auth = require('../../src/middlewares/auth');
@@ -23,9 +26,10 @@ describe('Auth routes', () => {
     let newUser;
     beforeEach(() => {
       newUser = {
-        name: faker.name.findName(),
         email: faker.internet.email().toLowerCase(),
-        password: 'password1',
+        userName: faker.internet.userName() + uuidv4(),
+        password: 'password1212',
+        acceptTerms: true,
       };
     });
 
@@ -33,16 +37,26 @@ describe('Auth routes', () => {
       const res = await request(app).post('/v1/auth/register').send(newUser).expect(httpStatus.CREATED);
 
       expect(res.body.user).not.toHaveProperty('password');
-      expect(res.body.user).toEqual({ id: expect.anything(), name: newUser.name, email: newUser.email, role: 'user' });
+      expect(res.body.user).toEqual({
+        id: expect.anything(),
+        email: newUser.email,
+        userName: newUser.userName,
+        acceptTerms: newUser.acceptTerms,
+        role: 'user',
+      });
 
       const dbUser = await User.findById(res.body.user.id);
       expect(dbUser).toBeDefined();
       expect(dbUser.password).not.toBe(newUser.password);
-      expect(dbUser).toMatchObject({ name: newUser.name, email: newUser.email, role: 'user' });
+      expect(dbUser).toMatchObject({
+        email: newUser.email,
+        userName: newUser.userName,
+        acceptTerms: newUser.acceptTerms,
+      });
 
-      expect(res.body.tokens).toEqual({
-        access: { token: expect.anything(), expires: expect.anything() },
-        refresh: { token: expect.anything(), expires: expect.anything() },
+      expect(res.body.token).toEqual({
+        access: expect.anything(),
+        expires: expect.anything(),
       });
     });
 
@@ -88,14 +102,16 @@ describe('Auth routes', () => {
 
       expect(res.body.user).toEqual({
         id: expect.anything(),
-        name: userOne.name,
+        firstName: userOne.firstName,
+        lastName: userOne.lastName,
+        userName: userOne.userName,
         email: userOne.email,
         role: userOne.role,
-      });
-
-      expect(res.body.tokens).toEqual({
-        access: { token: expect.anything(), expires: expect.anything() },
-        refresh: { token: expect.anything(), expires: expect.anything() },
+        acceptTerms: userOne.acceptTerms,
+        contactNumber: userOne.contactNumber,
+        shippingAddress: userOne.shippingAddress,
+        billingAddress: userOne.billingAddress,
+        verified: userOne.verified,
       });
     });
 
@@ -124,28 +140,33 @@ describe('Auth routes', () => {
   });
 
   describe('POST /v1/auth/logout', () => {
-    test('should return 204 if refresh token is valid', async () => {
+    test('should return 204 if refresh token is valid and saves cookies', async () => {
       await insertUsers([userOne]);
-      const expires = moment().add(config.jwt.refreshExpirationDays, 'days');
-      const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
-      await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH);
 
-      await request(app).post('/v1/auth/logout').send({ refreshToken }).expect(httpStatus.NO_CONTENT);
+      const App = express();
+      App.use(cookieParser(config.cookieSecret));
+      const refreshTokenExpires = config.jwt.refreshExpirationMinutes;
+      const expires = moment().add(refreshTokenExpires, 'minutes');
+      const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
+
+      App.post('/v1/auth/logout', function (req, res) {
+        tokenService.setTokenCookie(res, refreshToken, expires.toDate());
+      });
+
+      const agent = request.agent(App);
+      agent.post('/v1/auth/logout').expect(httpStatus.NO_CONTENT);
 
       const dbRefreshTokenDoc = await Token.findOne({ token: refreshToken });
       expect(dbRefreshTokenDoc).toBe(null);
-    });
-
-    test('should return 400 error if refresh token is missing from request body', async () => {
-      await request(app).post('/v1/auth/logout').send().expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 404 error if refresh token is not found in the database', async () => {
       await insertUsers([userOne]);
       const expires = moment().add(config.jwt.refreshExpirationDays, 'days');
       const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
-
-      await request(app).post('/v1/auth/logout').send({ refreshToken }).expect(httpStatus.NOT_FOUND);
+      const dbRefreshToken = await Token.findOne({ token: refreshToken });
+      expect(dbRefreshToken).toBe(null);
+      await request(app).post('/v1/auth/logout').expect(httpStatus.NOT_FOUND);
     });
 
     test('should return 404 error if refresh token is blacklisted', async () => {
@@ -154,33 +175,40 @@ describe('Auth routes', () => {
       const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
       await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH, true);
 
-      await request(app).post('/v1/auth/logout').send({ refreshToken }).expect(httpStatus.NOT_FOUND);
+      await request(app).post('/v1/auth/logout').expect(httpStatus.NOT_FOUND);
     });
   });
 
   describe('POST /v1/auth/refresh-tokens', () => {
     test('should return 200 and new auth tokens if refresh token is valid', async () => {
       await insertUsers([userOne]);
-      const expires = moment().add(config.jwt.refreshExpirationDays, 'days');
-      const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
-      await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH);
+      const App = express();
+      App.use(cookieParser(config.cookieSecret));
 
-      const res = await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.OK);
+      const accessTokenExpires = moment().add(config.jwt.accessExpirationMinutes, 'minutes');
+      const accessToken = tokenService.generateToken(userOne, accessTokenExpires, tokenTypes.ACCESS);
+      const refreshTokenExpires = moment().add(config.jwt.refreshExpirationMinutes, 'minutes');
+      const refreshToken = tokenService.generateToken(userOne, refreshTokenExpires, tokenTypes.REFRESH);
 
-      expect(res.body).toEqual({
-        access: { token: expect.anything(), expires: expect.anything() },
-        refresh: { token: expect.anything(), expires: expect.anything() },
+      App.post('/v1/auth/refresh-tokens', function (req, res) {
+        tokenService.saveToken(refreshToken, userOne, refreshTokenExpires, tokenTypes.REFRESH);
+        tokenService.setTokenCookie(res, refreshToken, refreshTokenExpires.toDate());
+        res.send({ access: accessToken, expires: accessTokenExpires.unix() });
       });
 
-      const dbRefreshTokenDoc = await Token.findOne({ token: res.body.refresh.token });
+      const agent = request.agent(App);
+      const res = await agent.post('/v1/auth/refresh-tokens').expect(httpStatus.OK);
+
+      expect(res.body).toEqual({
+        access: expect.anything(),
+        expires: expect.anything(),
+      });
+
+      const dbRefreshTokenDoc = await Token.findOne({ token: refreshToken });
       expect(dbRefreshTokenDoc).toMatchObject({ type: tokenTypes.REFRESH, user: userOne._id, blacklisted: false });
 
       const dbRefreshTokenCount = await Token.countDocuments();
       expect(dbRefreshTokenCount).toBe(1);
-    });
-
-    test('should return 400 error if refresh token is missing from request body', async () => {
-      await request(app).post('/v1/auth/refresh-tokens').send().expect(httpStatus.BAD_REQUEST);
     });
 
     test('should return 401 error if refresh token is signed using an invalid secret', async () => {
@@ -189,15 +217,15 @@ describe('Auth routes', () => {
       const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH, 'invalidSecret');
       await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH);
 
-      await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/v1/auth/refresh-tokens').expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is not found in the database', async () => {
       await insertUsers([userOne]);
       const expires = moment().add(config.jwt.refreshExpirationDays, 'days');
-      const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
+      tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
 
-      await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/v1/auth/refresh-tokens').expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is blacklisted', async () => {
@@ -206,7 +234,7 @@ describe('Auth routes', () => {
       const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
       await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH, true);
 
-      await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/v1/auth/refresh-tokens').expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should return 401 error if refresh token is expired', async () => {
@@ -215,7 +243,7 @@ describe('Auth routes', () => {
       const refreshToken = tokenService.generateToken(userOne._id, expires);
       await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH);
 
-      await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/v1/auth/refresh-tokens').expect(httpStatus.UNAUTHORIZED);
     });
 
     test('should return 401 error if user is not found', async () => {
@@ -223,7 +251,7 @@ describe('Auth routes', () => {
       const refreshToken = tokenService.generateToken(userOne._id, expires, tokenTypes.REFRESH);
       await tokenService.saveToken(refreshToken, userOne._id, expires, tokenTypes.REFRESH);
 
-      await request(app).post('/v1/auth/refresh-tokens').send({ refreshToken }).expect(httpStatus.UNAUTHORIZED);
+      await request(app).post('/v1/auth/refresh-tokens').expect(httpStatus.UNAUTHORIZED);
     });
   });
 

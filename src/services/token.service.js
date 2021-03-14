@@ -120,4 +120,5 @@ module.exports = {
   verifyToken,
   generateAuthTokens,
   generateResetPasswordToken,
+  setTokenCookie,
 };

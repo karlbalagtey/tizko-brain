@@ -48,7 +48,6 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
   } else if (process.argv[2] === '-d') {
     deleteData();
   }
-
 });
 
 const exitHandler = () => {
