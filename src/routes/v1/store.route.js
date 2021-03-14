@@ -44,23 +44,22 @@ module.exports = router;
  *             required:
  *               - name
  *               - location
- *               - password
- *               - role
+ *               - description
+ *               - contactNumber
  *             properties:
  *               name:
  *                 type: string
  *               location:
  *                 type: string
- *               password:
+ *               description:
  *                 type: string
- *               role:
- *                  type: string
- *                  enum: [store, admin]
+ *               contactNumber:
+ *                 type: number
  *             example:
  *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: store
+ *               location: Central London
+ *               description: Supermarket downtown central
+ *               contactNumber: 0209248124121
  *     responses:
  *       "201":
  *         description: Created
@@ -68,8 +67,6 @@ module.exports = router;
  *           application/json:
  *             schema:
  *                $ref: '#/components/schemas/Store'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -92,6 +89,16 @@ module.exports = router;
  *         schema:
  *           type: string
  *         description: Store location
+ *       - in: query
+ *         name: description
+ *         schema:
+ *           type: string
+ *         description: Store description
+ *       - in: query
+ *         name: contact number
+ *         schema:
+ *           type: number
+ *         description: Store contact number
  *       - in: query
  *         name: sortBy
  *         schema:
@@ -193,19 +200,17 @@ module.exports = router;
  *             properties:
  *               name:
  *                 type: string
- *               email:
+ *               location:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
+ *               description:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
+ *               contactNumber:
+ *                 type: number
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
+ *               name: fake store update
+ *               location: fake location updated
+ *               description: fake description of a store updated
+ *               contactNumber: 020295235235235
  *     responses:
  *       "200":
  *         description: OK
@@ -213,8 +218,6 @@ module.exports = router;
  *           application/json:
  *             schema:
  *                $ref: '#/components/schemas/Store'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":

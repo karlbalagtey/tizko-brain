@@ -55,6 +55,7 @@ module.exports = router;
  *                 type: string
  *               userName:
  *                 type: string
+ *                 description: must be unique
  *               email:
  *                 type: string
  *                 format: email
@@ -100,6 +101,16 @@ module.exports = router;
  *         schema:
  *           type: string
  *         description: User userName
+ *       - in: query
+ *         name: firstName
+ *         schema:
+ *           type: string
+ *         description: User firstName
+ *       - in: query
+ *         name: lastName
+ *         schema:
+ *           type: string
+ *         description: User lastName
  *       - in: query
  *         name: role
  *         schema:
@@ -204,7 +215,12 @@ module.exports = router;
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               userName:
+ *                 type: string
+ *                 description: must be unique
+ *               firstName:
+ *                 type: string
+ *               lastName:
  *                 type: string
  *               email:
  *                 type: string
@@ -216,9 +232,11 @@ module.exports = router;
  *                 minLength: 8
  *                 description: At least one number and one letter
  *             example:
- *               name: fake name
- *               email: fake@example.com
- *               password: password1
+ *               userName: kmarkb8017
+ *               firstName: karl
+ *               lastName: balagtey
+ *               email: karl.balagtey@gmail.com
+ *               password: password123
  *     responses:
  *       "200":
  *         description: OK

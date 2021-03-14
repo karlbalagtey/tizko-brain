@@ -34,9 +34,14 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
+ *               - userName
  *               - email
  *               - password
+ *               - acceptTerms
  *             properties:
+ *               userName:
+ *                 type: string,
+ *                 description: must be unique
  *               email:
  *                 type: string
  *                 format: email
@@ -46,7 +51,10 @@ module.exports = router;
  *                 format: password
  *                 minLength: 8
  *                 description: At least one number and one letter
+ *               acceptTerms:
+ *                 type: boolean
  *             example:
+ *               userName: fakeCustomer1
  *               acceptTerms: true
  *               email: fake@example.com
  *               password: password1
@@ -64,6 +72,8 @@ module.exports = router;
  *                   $ref: '#/components/schemas/AuthTokens'
  *       "400":
  *         $ref: '#/components/responses/DuplicateEmail'
+ *       "400":
+ *         $ref: '#/components/responses/DuplicateUserName'
  */
 
 /**
@@ -118,21 +128,8 @@ module.exports = router;
  * @swagger
  * /auth/logout:
  *   post:
- *     summary: Logout
+ *     summary: Logout - Refresh token is set in a signed cookie
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *             example:
- *               refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
  *     responses:
  *       "204":
  *         description: No content
@@ -146,19 +143,6 @@ module.exports = router;
  *   post:
  *     summary: Refresh auth tokens
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *             example:
- *               refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI1ZWJhYzUzNDk1NGI1NDEzOTgwNmMxMTIiLCJpYXQiOjE1ODkyOTg0ODQsImV4cCI6MTU4OTMwMDI4NH0.m1U63blB0MLej_WfB7yC2FTMnCziif9X8yzwDEfJXAg
  *     responses:
  *       "200":
  *         description: OK
