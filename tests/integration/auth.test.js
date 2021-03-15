@@ -16,7 +16,7 @@ const setupTestDB = require('../utils/setupTestDB');
 const { User, Token } = require('../../src/models');
 const { roleRights } = require('../../src/config/roles');
 const { tokenTypes } = require('../../src/config/tokens');
-const { userOne, admin, insertUsers } = require('../fixtures/user.fixture');
+const { userOne, superadmin, insertUsers } = require('../fixtures/user.fixture');
 const { userOneAccessToken, adminAccessToken } = require('../fixtures/token.fixture');
 
 setupTestDB();
@@ -102,16 +102,12 @@ describe('Auth routes', () => {
 
       expect(res.body.user).toEqual({
         id: expect.anything(),
+        email: userOne.email,
         firstName: userOne.firstName,
         lastName: userOne.lastName,
         userName: userOne.userName,
-        email: userOne.email,
         role: userOne.role,
         acceptTerms: userOne.acceptTerms,
-        contactNumber: userOne.contactNumber,
-        shippingAddress: userOne.shippingAddress,
-        billingAddress: userOne.billingAddress,
-        verified: userOne.verified,
       });
     });
 
@@ -497,14 +493,14 @@ describe('Auth middleware', () => {
   });
 
   test('should call next with no errors if user has required rights', async () => {
-    await insertUsers([admin]);
+    await insertUsers([superadmin]);
     const req = httpMocks.createRequest({
       headers: { Authorization: `Bearer ${adminAccessToken}` },
       params: { userId: userOne._id.toHexString() },
     });
     const next = jest.fn();
 
-    await auth(...roleRights.get('admin'))(req, httpMocks.createResponse(), next);
+    await auth(...roleRights.get('superadmin'))(req, httpMocks.createResponse(), next);
 
     expect(next).toHaveBeenCalledWith();
   });

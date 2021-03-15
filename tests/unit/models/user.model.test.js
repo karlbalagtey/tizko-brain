@@ -6,11 +6,12 @@ describe('User model', () => {
     let newUser;
     beforeEach(() => {
       newUser = {
-        firstName: faker.firstName.firstName(),
-        lastName: faker.lastname.lastName(),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
         role: 'user',
+        acceptTerms: true,
       };
     });
 
@@ -47,11 +48,12 @@ describe('User model', () => {
   describe('User toJSON()', () => {
     test('should not return user password when toJSON is called', () => {
       const newUser = {
-        firstName: faker.firstName.firstName(),
-        lastName: faker.lastName.lastName(),
+        firstName: faker.name.firstName(),
+        lastName: faker.name.lastName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
         role: 'user',
+        acceptTerms: true,
       };
       expect(new User(newUser).toJSON()).not.toHaveProperty('password');
     });

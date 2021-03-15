@@ -34,14 +34,11 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
- *               - userName
  *               - email
+ *               - userName
  *               - password
  *               - acceptTerms
  *             properties:
- *               userName:
- *                 type: string,
- *                 description: must be unique
  *               email:
  *                 type: string
  *                 format: email
@@ -51,6 +48,9 @@ module.exports = router;
  *                 format: password
  *                 minLength: 8
  *                 description: At least one number and one letter
+ *               userName:
+ *                 type: string,
+ *                 description: must be unique
  *               acceptTerms:
  *                 type: boolean
  *             example:
@@ -72,8 +72,6 @@ module.exports = router;
  *                   $ref: '#/components/schemas/AuthTokens'
  *       "400":
  *         $ref: '#/components/responses/DuplicateEmail'
- *       "400":
- *         $ref: '#/components/responses/DuplicateUserName'
  */
 
 /**
@@ -111,7 +109,7 @@ module.exports = router;
  *               properties:
  *                 user:
  *                   $ref: '#/components/schemas/User'
- *                 tokens:
+ *                 token:
  *                   $ref: '#/components/schemas/AuthTokens'
  *       "401":
  *         description: Invalid email or password

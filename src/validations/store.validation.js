@@ -6,7 +6,7 @@ const createStore = {
     name: Joi.string().required(),
     description: Joi.string().required(),
     location: Joi.string().required(),
-    contactNumber: Joi.string().required(),
+    contactNumber: Joi.number().required(),
   }),
 };
 
@@ -15,7 +15,7 @@ const getStores = {
     name: Joi.string(),
     description: Joi.string(),
     location: Joi.string(),
-    contactNumber: Joi.string(),
+    contactNumber: Joi.number(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -37,7 +37,7 @@ const updateStore = {
       name: Joi.string(),
       description: Joi.string(),
       location: Joi.string(),
-      contactNumber: Joi.string(),
+      contactNumber: Joi.number(),
     })
     .min(1),
 };

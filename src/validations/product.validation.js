@@ -6,7 +6,7 @@ const createProduct = {
     sku: Joi.string(),
     name: Joi.string().required(),
     description: Joi.string().required(),
-    price: Joi.string().required(),
+    price: Joi.number().required(),
     weight: Joi.number(),
     category: Joi.string(),
     stock: Joi.number(),
@@ -15,10 +15,11 @@ const createProduct = {
 
 const getProducts = {
   query: Joi.object().keys({
+    sku: Joi.string(),
     name: Joi.string(),
     description: Joi.string(),
-    price: Joi.string(),
-    weight: Joi.string(),
+    price: Joi.number(),
+    weight: Joi.number(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
