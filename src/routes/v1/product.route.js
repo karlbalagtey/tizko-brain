@@ -13,7 +13,7 @@ router
 
 router
   .route('/:productId')
-  .get(auth('getProducts'), validate(productValidation.getProduct), productController.getProduct)
+  .get(validate(productValidation.getProduct), productController.getProduct)
   .patch(auth('manageProducts'), validate(productValidation.updateProduct), productController.updateProduct)
   .delete(auth('manageProducts'), validate(productValidation.deleteProduct), productController.deleteProduct);
 
@@ -42,30 +42,44 @@ module.exports = router;
  *           schema:
  *             type: object
  *             required:
+ *               - sku
  *               - name
- *               - email
- *               - password
- *               - role
+ *               - description
+ *               - image
+ *               - weight
+ *               - price
+ *               - category
+ *               - stock
+ *               - store
  *             properties:
+ *               sku:
+ *                 type: number
+ *                 description: must be unique
  *               name:
  *                 type: string
- *               email:
+ *               description:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
+ *               image:
+ *                 type: file
+ *                 description: Upload file image in jpg or png
+ *               weight:
+ *                 type: number
+ *               price:
+ *                 type: number
+ *               category:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
- *               role:
- *                  type: string
- *                  enum: [product, admin]
+ *               stock:
+ *                 type:string
  *             example:
+ *               sku: 352358719827591287591812521
  *               name: fake name
- *               email: fake@example.com
- *               password: password1
- *               role: product
+ *               description: fake product description
+ *               image: [https://picsum.photos/200, https://picsum.photos/200, https://picsum.photos/200]
+ *               weight: 12
+ *               price: 121
+ *               category: steel
+ *               stock: 19
+ *               store: [storeId]
  *     responses:
  *       "201":
  *         description: Created
@@ -73,8 +87,6 @@ module.exports = router;
  *           application/json:
  *             schema:
  *                $ref: '#/components/schemas/Product'
- *       "400":
- *         $ref: '#/components/responses/DuplicateEmail'
  *       "401":
  *         $ref: '#/components/responses/Unauthorized'
  *       "403":
@@ -84,19 +96,46 @@ module.exports = router;
  *     summary: Get all products
  *     description: All users can retrieve all products.
  *     tags: [Products]
- *     security:
- *       - bearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: sku
+ *         schema:
+ *           type: number
+ *         description: Unique produce identifier
  *       - in: query
  *         name: name
  *         schema:
  *           type: string
  *         description: Product name
  *       - in: query
- *         name: role
+ *         name: description
  *         schema:
  *           type: string
- *         description: Product role
+ *         description: Product description
+ *       - in: query
+ *         name: image
+ *         schema:
+ *           type: image
+ *         description: Product image
+ *       - in: query
+ *         name: weight
+ *         schema:
+ *           type: number
+ *         description: Product weight
+ *       - in: query
+ *         name: price
+ *         schema:
+ *           type: number
+ *         description: Product price
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Product category
+ *       - in: query
+ *         name: stock
+ *         schema:
+ *           type: number
  *       - in: query
  *         name: sortBy
  *         schema:
@@ -151,10 +190,8 @@ module.exports = router;
  * /products/{id}:
  *   get:
  *     summary: Get a product
- *     description: Logged in products can fetch only their own product information. Only admins can fetch other products.
+ *     description: Anyone can fetch the product information.
  *     tags: [Products]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -178,7 +215,7 @@ module.exports = router;
  *
  *   patch:
  *     summary: Update a product
- *     description: Logged in products can only update their own information. Only admins can update other products.
+ *     description: Admin users can only update their own products.
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
@@ -196,21 +233,33 @@ module.exports = router;
  *           schema:
  *             type: object
  *             properties:
+ *               sku:
+ *                 type: string
+ *                 description: must be unique
  *               name:
  *                 type: string
- *               email:
+ *               description:
  *                 type: string
- *                 format: email
- *                 description: must be unique
- *               password:
+ *               image:
+ *                 type: file
+ *                 description: must be in jpg/png
+ *               weight:
+ *                 type: number
+ *               price:
+ *                 type: number
+ *               category:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 description: At least one number and one letter
+ *               stock:
+ *                 type: number
  *             example:
+ *               sku: 1212512351290571927501
  *               name: fake name
- *               email: fake@example.com
- *               password: password1
+ *               description: fake product description
+ *               image: [https://picsum.photos/200]
+ *               weight: 122
+ *               price: 129
+ *               category: concrete
+ *               stock: 64
  *     responses:
  *       "200":
  *         description: OK
@@ -229,7 +278,7 @@ module.exports = router;
  *
  *   delete:
  *     summary: Delete a product
- *     description: Logged in products can delete only themselves. Only admins can delete other products.
+ *     description: Admin users can delete products under the stores they manage.
  *     tags: [Products]
  *     security:
  *       - bearerAuth: []
