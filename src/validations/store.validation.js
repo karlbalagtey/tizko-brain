@@ -34,10 +34,10 @@ const updateStore = {
   }),
   body: Joi.object()
     .keys({
-      name: Joi.string(),
-      description: Joi.string(),
-      location: Joi.string(),
-      contactNumber: Joi.number(),
+      name: Joi.string().empty(''),
+      description: Joi.string().empty(''),
+      location: Joi.string().empty(''),
+      contactNumber: Joi.number().empty(''),
     })
     .min(1),
 };

@@ -1,6 +1,6 @@
 const faker = require('faker/locale/en');
-const stores = require('../2-stores/store');
 const { v4: uuidv4 } = require('uuid');
+const stores = require('../2-stores/store');
 
 let products = [];
 
